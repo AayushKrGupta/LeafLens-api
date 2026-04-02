@@ -14,7 +14,15 @@ A React Native mobile app that uses computer vision to identify plant diseases f
 
 | Home | Scanner | Picker | History |
 |------|---------|--------|---------|
-| ![Home Screen](screenshots/home.png) | ![Scanner Screen](screenshots/scanner.png) | ![Picker Screen](screenshots/picker.png) | ![History Screen](screenshots/history.png) |
+| ![Home Screen](assets/screenshots/home.png) | ![Scanner Screen](assets/screenshots/scanner.png) | ![Picker Screen](assets/screenshots/picker.png) | ![History Screen](assets/screenshots/history.png) |
+
+Just add your screenshot files named:
+- `home.png`
+- `scanner.png` 
+- `picker.png`
+- `history.png`
+
+to the `assets/screenshots/` folder and they'll automatically appear in the README!
 
 ## Tech Stack
 
