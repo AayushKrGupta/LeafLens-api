@@ -111,6 +111,15 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root() -> dict[str, str]:
+    return {
+        "message": "LeafLens API is running",
+        "health": "/health",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     model = load_model()
