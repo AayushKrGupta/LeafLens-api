@@ -16,6 +16,7 @@ import { BlurView } from 'expo-blur';
 import { Image as ImageIcon, Search, CheckCircle2, TrendingUp, AlertCircle, X } from 'lucide-react-native';
 import { predictLeaf, PredictionResult } from '@/utils/api';
 import { saveHistory } from '@/utils/history';
+import { preprocessImage, logImageMetadata, ImageMetadata } from '@/utils/imageProcessing';
 import Colors from '@/constants/Colors';
 
 const { width } = Dimensions.get('window');
@@ -25,42 +26,69 @@ const { width } = Dimensions.get('window');
  */
 export default function PickerScreen() {
   const [image, setImage] = useState<string | null>(null);
+  const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [debugMode, setDebugMode] = useState(false);
   const theme = Colors.dark;
 
   const pickImage = async () => {
     // Reset state
     setResult(null);
     setError(null);
+    setProcessedImage(null);
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.85, // Match camera quality
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const selectedUri = result.assets[0].uri;
+      setImage(selectedUri);
+      
+      // Preprocess the image using the same pipeline as camera
+      try {
+        const processed = await preprocessImage(selectedUri, 'picker', debugMode);
+        setProcessedImage(processed.uri);
+        
+        // Log metadata for debugging
+        const metadata: ImageMetadata = {
+          width: processed.width,
+          height: processed.height,
+          uri: processed.uri,
+          source: 'picker',
+        };
+        
+        if (debugMode) {
+          logImageMetadata(metadata, { originalUri: selectedUri });
+        }
+      } catch (error) {
+        console.error('Image preprocessing failed:', error);
+        // Fallback to original URI if preprocessing fails
+        setProcessedImage(selectedUri);
+      }
     }
   };
 
   const analyzeImage = async () => {
-    if (!image) return;
+    if (!processedImage) return;
 
     try {
       setIsAnalyzing(true);
       setError(null);
       
-      const prediction = await predictLeaf(image);
+      // Use the same API function as camera with debug mode
+      const prediction = await predictLeaf(processedImage, 'leaf.jpg', 'image/jpeg', debugMode);
       setResult(prediction);
       
       // Save locally
       await saveHistory({
         ...prediction,
-        imageUri: image,
+        imageUri: image!, // We know image is not null here
       });
 
     } catch (err: any) {
@@ -72,6 +100,7 @@ export default function PickerScreen() {
 
   const clearSelection = () => {
     setImage(null);
+    setProcessedImage(null);
     setResult(null);
     setError(null);
   };
@@ -121,20 +150,32 @@ export default function PickerScreen() {
 
         {/* Action Buttons */}
         {image && !result && (
-          <TouchableOpacity 
-            style={[styles.analyzeBtn, { backgroundColor: theme.accent }]} 
-            onPress={analyzeImage}
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <>
-                <Search size={22} color="#fff" style={{ marginRight: 10 }} />
-                <Text style={styles.analyzeBtnText}>Analyze Leaf</Text>
-              </>
-            )}
-          </TouchableOpacity>
+          <View style={styles.actionButtons}>
+            <TouchableOpacity 
+              style={[styles.analyzeBtn, { backgroundColor: theme.accent }]} 
+              onPress={analyzeImage}
+              disabled={isAnalyzing || !processedImage}
+            >
+              {isAnalyzing ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Search size={22} color="#fff" style={{ marginRight: 10 }} />
+                  <Text style={styles.analyzeBtnText}>Analyze Leaf</Text>
+                </>
+              )}
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.debugBtn, { backgroundColor: debugMode ? theme.accent : 'rgba(255,255,255,0.1)' }]} 
+              onPress={() => setDebugMode(!debugMode)}
+            >
+              <AlertCircle size={16} color={debugMode ? '#fff' : theme.textSecondary} />
+              <Text style={[styles.debugBtnText, { color: debugMode ? '#fff' : theme.textSecondary }]}>
+                Debug {debugMode ? 'ON' : 'OFF'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {/* Result Summary */}
@@ -281,7 +322,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 16,
+  },
+  actionButtons: {
     marginBottom: 32,
+  },
+  debugBtn: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    alignSelf: 'center',
+  },
+  debugBtnText: {
+    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: '600',
   },
   analyzeBtnText: {
     color: '#fff',
