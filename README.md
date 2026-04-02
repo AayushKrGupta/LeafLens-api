@@ -14,7 +14,7 @@ A React Native mobile app that uses computer vision to identify plant diseases f
 
 | Home | Scanner | Picker | History |
 |------|---------|--------|---------|
-| ![Home Screen](assets/screenshots/home.png) | ![Scanner Screen](assets/screenshots/scanner.png) | ![Picker Screen](assets/screenshots/picker.png) | ![History Screen](assets/screenshots/history.png) |
+| ![Home Screen](https://github.com/AayushKrGupta/LeafLens-api/tree/main/LeafLens/assets/screenshots/home.jpeg) | ![Scanner Screen](https://github.com/AayushKrGupta/LeafLens-api/blob/main/LeafLens/assets/screenshots/scanner.jpeg) | ![Picker Screen](https://github.com/AayushKrGupta/LeafLens-api/blob/main/LeafLens/assets/screenshots/picker.jpeg) | ![History Screen](https://github.com/AayushKrGupta/LeafLens-api/blob/main/LeafLens/assets/screenshots/history.jpeg) |
 
 Just add your screenshot files named:
 - `home.png`
