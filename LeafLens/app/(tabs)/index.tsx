@@ -12,8 +12,8 @@ import {
   SafeAreaView,
   Platform,
 } from 'react-native';
-import { useFocusEffect } from 'expo-router';
-import { Activity, Leaf, ScanSearch, History as HistoryIcon, TrendingUp, Target, ShieldCheck } from 'lucide-react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Activity, Leaf, ScanSearch, History as HistoryIcon, TrendingUp, Target, ShieldCheck, ChevronRight } from 'lucide-react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { getHistory, getStats, HistoryItem, Stats } from '@/utils/history';
 import Colors from '@/constants/Colors';
@@ -24,6 +24,7 @@ const { width } = Dimensions.get('window');
  * LeafLens - Premium Performance Dashboard
  */
 export default function HomeScreen() {
+  const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -88,12 +89,15 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>System Overview</Text>
+            <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>Leaf Lens</Text>
             <Text style={[styles.headerTitle, { color: theme.text }]}>Analytics</Text>
           </View>
-          <TouchableOpacity style={[styles.profileButton, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
-            <View style={styles.statusDot} />
-          </TouchableOpacity>
+          <View style={[styles.profileButton, { backgroundColor: theme.card, borderColor: theme.cardBorder }]}>
+            <Image 
+              source={require('@/assets/images/LeafLens.png')} 
+              style={styles.headerLogo} 
+            />
+          </View>
         </View>
 
         {history.length > 0 ? (
@@ -176,8 +180,11 @@ export default function HomeScreen() {
             {/* Scan History Section */}
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent History</Text>
-              <TouchableOpacity>
-                <Text style={{ color: theme.accent, fontWeight: '600' }}>View All</Text>
+              <TouchableOpacity onPress={() => router.push('/history')}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ color: theme.accent, fontWeight: '700', fontSize: 13, marginRight: 2 }}>View All</Text>
+                  <ChevronRight size={14} color={theme.accent} />
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -247,20 +254,18 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   profileButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
-  statusDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#3b82f6',
-    borderWidth: 2,
-    borderColor: '#fff',
+  headerLogo: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   statsRow: {
     flexDirection: 'row',
