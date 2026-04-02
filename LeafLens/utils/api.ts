@@ -47,8 +47,16 @@ export async function checkHealth(): Promise<boolean> {
 export async function predictLeaf(
   imageUri: string,
   fileName: string = 'leaf.jpg',
-  mimeType: string = 'image/jpeg'
+  mimeType: string = 'image/jpeg',
+  debug: boolean = false
 ): Promise<PredictionResult> {
+  if (debug) {
+    console.log('=== API Upload Debug ===');
+    console.log('Image URI:', imageUri);
+    console.log('File name:', fileName);
+    console.log('MIME type:', mimeType);
+  }
+
   const formData = new FormData();
   formData.append('file', {
     uri: imageUri,
@@ -69,6 +77,11 @@ export async function predictLeaf(
       TIMEOUT_MS
     );
 
+    if (debug) {
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+    }
+
     if (!response.ok) {
       if (response.status === 422) {
         throw { message: 'Invalid image format. Please use a clear leaf photo.', type: 'invalid_image' } as ApiError;
@@ -77,6 +90,17 @@ export async function predictLeaf(
     }
 
     const data: PredictionResult = await response.json();
+    
+    if (debug) {
+      console.log('Prediction result:', {
+        plant: data.plant,
+        condition: data.condition,
+        confidence: `${(data.confidence * 100).toFixed(1)}%`,
+        inputSize: data.input_size,
+      });
+      console.log('=== End API Debug ===');
+    }
+    
     return data;
   } catch (error: any) {
     if (error?.type) throw error; // already formatted
